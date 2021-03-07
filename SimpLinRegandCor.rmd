@@ -1,0 +1,111 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# Module 2 - BAN 502
+## Tate, Levi
+### Simple Linear Regression and Correlation
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(GGally)
+library(lmtest)
+```
+
+```{r}
+air = airquality
+```
+
+The air data frame has 6 variables with 153 observations. Ozone and Solar.R are\ missing some observations. The variable Ozone is likely to be the response variable.
+
+```{r}
+air2 <- drop_na(air)
+```
+
+After deleting the missing observations, 6 columns and 111 rows remain.
+
+```{r}
+ggpairs(air2)
+
+ggcorr(air2, label = TRUE)
+```
+Temperature is the most strongly correlated with Ozone: ~.7
+Day is is the least strongly correlated with Ozone: -.005
+
+```{r}
+ggplot(air2, aes(x = Temp, y = Ozone)) +
+geom_point(alpha = 0.5) +
+  theme_bw()
+```
+
+```{r}
+Ozone_temp_simple = recipe(Ozone ~ Temp, air2)
+
+lm_model =
+  linear_reg() %>%
+  set_engine("lm")
+
+lm_wflow =
+  workflow() %>%
+  add_model(lm_model) %>%
+  add_recipe(Ozone_temp_simple)
+
+lm_fit = fit(lm_wflow, air2)
+```
+
+```{r}
+summary(lm_fit$fit$fit$fit)
+confint(lm_fit$fit$fit$fit) # 1.96-2.91
+```
+
+Adjusted R-squared: .4833 | predictor variable is significant: < 2e-16
+
+```{r}
+ggplot(air2, aes(x = Temp, y = Ozone)) +
+geom_point() +
+geom_smooth(method = "lm", se =FALSE, color = "red") +
+  theme_bw()
+```
+
+```{r}
+testdata = data.frame(Temp = 80)
+predict(lm_fit, new_data = testdata)
+
+-147.6461 + 2.4391*80
+```
+
+**Assumption 1:** The predictor and the response variable have a linear relationship
+True, although the R sqaured value isn't great. should compare to other models
+
+**Assumption 2:** Model errors (residuals) are independent
+Use the Durbin-Watson Test to examine independence of residuals.
+
+```{r}
+dwtest(lm_fit$fit$fit$fit)
+```
+DW = 1.8644, p-value = .2123: slight positive autocorrelation. fail to reject null hypothesis with this p-value. residuals are likely independent.
+
+**Assumption 3:** Model residuals exhibit constant variance
+Examine a plot of variables
+
+```{r}
+air2 = air2 %>% mutate(resid1 = lm_fit$fit$fit$fit$residuals)
+ggplot(air2, aes(x = Temp, y = resid1)) +
+  geom_point() +
+  theme_bw()
+```
+A non linear effect is present.
+
+**Assumption 4:** Model Residuals are normally distributed
+Examine a histogram of the residuals
+
+```{r}
+ggplot(air2, aes(x = resid1)) +
+  geom_histogram() +
+  theme_bw()
+```
+the residuals histogram is slightly skewed and moderately normally distributed.
+
+

@@ -1,0 +1,59 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+# BAN 502 - Refresher Assignment
+## Tate, Levi
+
+```{r task 1 & 2}
+library(tidyverse)
+diamonddata = diamonds
+```
+
+```{r task 3}
+ggplot(diamonddata, aes(x = carat, y = price)) +
+  geom_point()
+```
+Generally, as carat size increases, price increases for diamonds.
+
+```{r task 4}
+ggplot(diamonddata, aes(x = carat, y = price, color = cut)) +
+  geom_point()
+```
+As carat increases, cut quality decreases and price increases. 
+
+```{r task 5}
+ggplot(diamonddata, aes(x = carat, y = price, color = cut)) +
+  geom_point() +
+  facet_wrap(~ color)
+```
+As color moves from D to J, there is more variability in carat size(more diamonds in color J have a greater carat). Cut quality and price exponentially increase in color D diamonds and slowly steadies out as color changes(D to J). 
+
+```{r task 6}
+inventory <- read_csv("InventoryData.csv")
+summary(inventory)
+```
+```{r task 7}
+inventoryA <- inventory %>% 
+                      filter(Supplier == "A")
+```
+
+After filtering the inventory to supplier A only, there  are 3695 rows in the new data frame.
+
+```{r task 8}
+inventoryA = mutate(inventoryA, OnHandRatio = `On Hand` / `Annual Demand`)
+```
+
+The code above mutates the data frame inventoryA by adding a new column, OnHandRatio, which provides the ratio of On Hand and Annual Demand.
+
+```{r task 9}
+avg_cost <- inventoryA %>%
+                      group_by(`Item SKU`) %>%
+                      summarize(SKUAvgCost = mean(`Cost per Unit ($)`))
+```
+
+Given your previous course experience with R/RStudio, what topics/concepts did you find to be most challenging? \
+
+In module 6 of MIS 503, working with dates was the most challenging topic/concept. 
+
